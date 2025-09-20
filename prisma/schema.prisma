@@ -6,7 +6,6 @@
 
 generator client {
   provider = "prisma-client-js"
-  output   = "../src/generated/prisma"
 }
 
 datasource db {
@@ -17,7 +16,7 @@ datasource db {
 
 model User {
   id              String            @id @default(uuid())
-  role            Role              @default(USER)
+  role            Role              @default(MEMBER)
   name            String
   email           String            @unique
   password        String
@@ -28,8 +27,22 @@ model User {
   programType     ProgramType?
   createdAt       DateTime          @default(now())
   updatedAt       DateTime          @updatedAt
+  Session         Session[]
 
-  @@map("admins")
+  @@map("users")
+}
+
+model Session {
+  id        String   @id @default(uuid())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@map("sessions")
 }
 
 model OrganizationStructure {
@@ -38,6 +51,8 @@ model OrganizationStructure {
   Position OrganizationPosition @default(STAFF)
   mediaUrl String?
   order    Int?
+
+  @@map("organizationStructures")
 }
 
 model News {
@@ -50,6 +65,8 @@ model News {
   updatedAt   DateTime @updatedAt
   User        User?    @relation(fields: [userId], references: [id])
   userId      String?
+
+  @@map("news")
 }
 
 model ActivityProgram {
@@ -62,11 +79,13 @@ model ActivityProgram {
   updatedAt   DateTime @updatedAt
   User        User?    @relation(fields: [userId], references: [id])
   userId      String?
+
+  @@map("activityPrograms")
 }
 
 enum Role {
   ADMIN
-  USER
+  MEMBER
 }
 
 enum ProgramType {
