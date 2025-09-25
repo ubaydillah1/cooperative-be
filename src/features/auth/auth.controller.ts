@@ -3,9 +3,12 @@ import { z } from "zod";
 import prisma from "../../lib/prisma.js";
 import bcrypt from "bcrypt";
 import { loginSchema, registerSchema } from "./auth.scheme.js";
-import { generateSessionToken } from "../utils/token.js";
+import { generateSessionToken } from "../../utils/token.js";
 import { addHours } from "date-fns";
 import { CONFIG } from "../../lib/config.js";
+import { AuthService } from "./auth.service.js";
+
+const authService = new AuthService();
 
 export const login = async (req: Request, res: Response) => {
   try {
@@ -27,15 +30,7 @@ export const login = async (req: Request, res: Response) => {
       return;
     }
 
-    const token = generateSessionToken();
-
-    await prisma.session.create({
-      data: {
-        userId: user.id,
-        token,
-        expiresAt: addHours(new Date(), 24),
-      },
-    });
+    const token = await authService.createSession(user.id);
 
     res.cookie("token", token, {
       httpOnly: true,
@@ -51,7 +46,7 @@ export const login = async (req: Request, res: Response) => {
         message: issue.message,
       }));
 
-      return res
+      res
         .status(400)
         .json({ errors: formatted, message: "Invalid field requirement" });
     }
@@ -111,7 +106,7 @@ export const register = async (req: Request, res: Response) => {
         message: issue.message,
       }));
 
-      return res
+      res
         .status(400)
         .json({ errors: formatted, message: "Invalid field requirement" });
     }

@@ -2,6 +2,9 @@ import express, { type Response } from "express";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import authRoutes from "./features/auth/auth.routes.js";
+import memberRoutes from "./features/member/member.routes.js";
+import "dotenv/config";
+import { authorize } from "./middleware/authorize.js";
 
 const app = express();
 
@@ -15,9 +18,10 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 
-app.use("/auth", authRoutes);
+app.use("/api/auth", authRoutes);
+app.use("/api/member", authorize(["MEMBER"]), memberRoutes);
 
-app.use((req, res: Response) => {
+app.use((_, res: Response) => {
   res.status(404).json({ message: "Not Found" });
 });
 

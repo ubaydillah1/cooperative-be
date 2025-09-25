@@ -1,25 +1,29 @@
 import prisma from "../../lib/prisma.js";
-import { v4 as uuidv4 } from "uuid";
 import { addHours, differenceInMinutes } from "date-fns";
+import { generateSessionToken } from "../../utils/token.js";
 
 export class AuthService {
   async createSession(userId: string, expiresInHours = 24) {
-    const token = uuidv4();
+    const token = generateSessionToken();
     const expiresAt = new Date(Date.now() + expiresInHours * 60 * 60 * 1000);
 
-    return prisma.session.create({
+    await prisma.session.create({
       data: {
         userId,
         token,
         expiresAt,
       },
     });
+
+    return token;
   }
 
   async validateSession(token: string) {
     const session = await prisma.session.findUnique({
       where: { token },
-      include: { user: true },
+      include: {
+        user: { select: { id: true, name: true, email: true, role: true } },
+      },
     });
 
     if (!session) return null;
@@ -35,11 +39,12 @@ export class AuthService {
   }
 
   async extendSession(token: string, extraHours = 1) {
-    const session = await prisma.session.update({
+    await prisma.session.update({
       where: { token },
       data: { expiresAt: addHours(new Date(), extraHours) },
     });
-    return session;
+
+    return token;
   }
 
   async extendIfNeeded(token: string, thresholdMinutes = 30, extraHours = 1) {
@@ -51,6 +56,6 @@ export class AuthService {
     if (minutesLeft <= thresholdMinutes) {
       return this.extendSession(token, extraHours);
     }
-    return session;
+    return token;
   }
 }
