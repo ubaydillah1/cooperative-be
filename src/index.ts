@@ -10,7 +10,7 @@ const app = express();
 
 app.use(
   cors({
-    origin: ["http://localhost:3000"],
+    origin: ["http://localhost:3000", "https://koperasi-khl.vercel.app"],
     credentials: true,
   })
 );
@@ -20,6 +20,7 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use("/api/auth", authRoutes);
 app.use("/api/member", authorize(["MEMBER"]), memberRoutes);
+app.use("/api/admin", authorize(["ADMIN"]), memberRoutes);
 
 app.use((_, res: Response) => {
   res.status(404).json({ message: "Not Found" });

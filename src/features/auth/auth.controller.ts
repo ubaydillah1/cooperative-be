@@ -7,6 +7,7 @@ import { generateSessionToken } from "../../utils/token.js";
 import { addHours } from "date-fns";
 import { CONFIG } from "../../lib/config.js";
 import { AuthService } from "./auth.service.js";
+import supabase from "../../lib/supabase.js";
 
 const authService = new AuthService();
 
@@ -16,6 +17,7 @@ export const login = async (req: Request, res: Response) => {
 
     const user = await prisma.user.findUnique({
       where: { email },
+      select: { id: true, password: true },
     });
 
     if (!user) {
@@ -60,7 +62,10 @@ export const register = async (req: Request, res: Response) => {
     const { name, email, password, role, address, programType } =
       registerSchema.parse(req.body);
 
-    const existingEmail = await prisma.user.findUnique({ where: { email } });
+    const existingEmail = await prisma.user.findUnique({
+      where: { email },
+      select: { id: true },
+    });
 
     if (existingEmail) {
       res
@@ -76,10 +81,11 @@ export const register = async (req: Request, res: Response) => {
         name,
         email,
         password: hashedPassword,
-        role,
         address: address ?? null,
         programType: programType ?? null,
+        ...(role ? { role } : {}),
       },
+      select: { id: true },
     });
 
     const token = generateSessionToken();
@@ -111,6 +117,119 @@ export const register = async (req: Request, res: Response) => {
         .json({ errors: formatted, message: "Invalid field requirement" });
     }
 
+    res.status(500).json({ message: "Server Error" });
+  }
+};
+
+export const editAvatar = async (req: Request, res: Response) => {
+  const userId = req.params.id;
+  const file = req.file as Express.Multer.File | undefined;
+
+  if (!file) {
+    res.status(400).json({ message: "Avatar is required" });
+    return;
+  }
+
+  if (!userId) {
+    res.status(400).json({ message: "User ID is required" });
+    return;
+  }
+
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true, ImageProfile: true },
+    });
+
+    if (!user) {
+      res.status(404).json({ message: "User not found" });
+      return;
+    }
+
+    if (user.ImageProfile) {
+      await supabase.storage
+        .from("avatars")
+        .remove([user.ImageProfile.split("/").pop()!]);
+    }
+
+    const fileName = `${Date.now()}-${file.originalname}`;
+
+    const { error } = await supabase.storage
+      .from("avatars")
+      .upload(fileName, file.buffer);
+
+    if (error) {
+      res.status(500).json({ message: "Server Error" });
+      return;
+    }
+
+    const publicUrl = supabase.storage.from("avatars").getPublicUrl(fileName)
+      .data.publicUrl;
+
+    await prisma.user.update({
+      where: { id: userId },
+      data: {
+        ImageProfile: publicUrl,
+      },
+    });
+
+    res.status(200).json({ message: "Avatar updated successfully" });
+  } catch {
+    res.status(500).json({ message: "Server Error" });
+  }
+};
+
+export const editIdCardPhoto = async (req: Request, res: Response) => {
+  const userId = req.params.id;
+  const file = req.file as Express.Multer.File | undefined;
+
+  if (!file) {
+    res.status(400).json({ message: "Id Card Photo is required" });
+    return;
+  }
+
+  if (!userId) {
+    res.status(400).json({ message: "User ID is required" });
+    return;
+  }
+
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true, idCardPhoto: true },
+    });
+
+    if (!user) {
+      res.status(404).json({ message: "User not found" });
+      return;
+    }
+
+    if (user.idCardPhoto) {
+      await supabase.storage
+        .from("credentials")
+        .remove([user.idCardPhoto.split("/").pop()!]);
+    }
+
+    const fileName = `${Date.now()}-${file.originalname}`;
+
+    const { error } = await supabase.storage
+      .from("credentials")
+      .upload(fileName, file.buffer);
+
+    if (error) {
+      res.status(500).json({ message: "Server Error" });
+      return;
+    }
+
+    await prisma.user.update({
+      where: { id: userId },
+      data: {
+        idCardPhoto: fileName,
+      },
+    });
+
+    res.status(200).json({ message: "Id Card Photo updated successfully" });
+  } catch {
     res.status(500).json({ message: "Server Error" });
   }
 };

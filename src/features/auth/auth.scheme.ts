@@ -7,16 +7,17 @@ export const loginSchema = z.object({
 });
 
 export const registerSchema = z.object({
-  name: z.string().min(3),
+  name: z
+    .string()
+    .min(3)
+    .regex(/^[A-Za-z\s]+$/, "Name can only contain letters and spaces"),
   email: z.email(),
   password: z.string().min(6),
-  role: z.enum([Role.ADMIN, Role.MEMBER]),
+  role: z.enum([Role.ADMIN, Role.MEMBER]).optional(),
   address: z.string().optional(),
-  programType: z
-    .enum([
-      ProgramType.MARKETING,
-      ProgramType.OPERASIONAL,
-      ProgramType.KEUANGAN,
-    ])
-    .optional(),
+  programType: z.enum([
+    ProgramType.MARKETING,
+    ProgramType.OPERASIONAL,
+    ProgramType.KEUANGAN,
+  ]),
 });
