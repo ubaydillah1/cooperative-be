@@ -19,6 +19,7 @@ model User {
   role            Role              @default(MEMBER)
   name            String
   email           String            @unique
+  status          Status            @default(PENDING)
   password        String
   address         String?
   idCardPhoto     String?
@@ -49,7 +50,7 @@ model Session {
 model OrganizationStructure {
   id       String               @id @default(uuid())
   name     String
-  Position OrganizationPosition @default(STAFF)
+  position OrganizationPosition @default(STAFF)
   mediaUrl String?
   order    Int?
 

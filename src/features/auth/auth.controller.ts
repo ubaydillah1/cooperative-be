@@ -59,7 +59,7 @@ export const login = async (req: Request, res: Response) => {
 
 export const register = async (req: Request, res: Response) => {
   try {
-    const { name, email, password, role, address, programType } =
+    const { name, email, password, address, programType } =
       registerSchema.parse(req.body);
 
     const existingEmail = await prisma.user.findUnique({
@@ -83,7 +83,6 @@ export const register = async (req: Request, res: Response) => {
         password: hashedPassword,
         address: address ?? null,
         programType: programType ?? null,
-        ...(role ? { role } : {}),
       },
       select: { id: true },
     });
@@ -96,6 +95,7 @@ export const register = async (req: Request, res: Response) => {
         token,
         expiresAt: addHours(new Date(), 24),
       },
+      select: { id: true },
     });
 
     res.cookie("token", token, {
@@ -171,6 +171,7 @@ export const editAvatar = async (req: Request, res: Response) => {
       data: {
         ImageProfile: publicUrl,
       },
+      select: { id: true },
     });
 
     res.status(200).json({ message: "Avatar updated successfully" });
@@ -226,10 +227,29 @@ export const editIdCardPhoto = async (req: Request, res: Response) => {
       data: {
         idCardPhoto: fileName,
       },
+      select: { id: true },
     });
 
     res.status(200).json({ message: "Id Card Photo updated successfully" });
   } catch {
     res.status(500).json({ message: "Server Error" });
   }
+};
+
+export const me = async (req: Request, res: Response) => {
+  const session = req.cookies?.token;
+
+  if (!session) {
+    res.status(404).json({ message: "Token not found" });
+    return;
+  }
+
+  const user = await authService.validateSession(session);
+
+  if (!user) {
+    res.status(404).json({ message: "User not found" });
+    return;
+  }
+
+  res.status(200).json({ message: "User found", data: user });
 };

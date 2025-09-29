@@ -22,7 +22,13 @@ export class AuthService {
     const session = await prisma.session.findUnique({
       where: { token },
       include: {
-        user: { select: { id: true, name: true, email: true, role: true } },
+        user: {
+          select: {
+            id: true,
+            email: true,
+            role: true,
+          },
+        },
       },
     });
 

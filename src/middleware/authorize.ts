@@ -19,7 +19,7 @@ export const authorize = (allowedRoles: Role[]) => {
         return;
       }
 
-      await authService.extendIfNeeded(token, 30, 1);
+      // await authService.extendIfNeeded(token, 30, 1);
 
       if (!allowedRoles.includes(user.role)) {
         res.status(403).json({ message: "Forbidden" });
