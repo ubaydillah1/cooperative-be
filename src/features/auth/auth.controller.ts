@@ -36,7 +36,7 @@ export const login = async (req: Request, res: Response) => {
 
     res.cookie("token", token, {
       httpOnly: true,
-      sameSite: CONFIG.NODE_ENV === "production" ? "lax" : "none",
+      sameSite: "none",
       secure: true,
     });
 
@@ -100,7 +100,7 @@ export const register = async (req: Request, res: Response) => {
 
     res.cookie("token", token, {
       httpOnly: true,
-      sameSite: CONFIG.NODE_ENV === "production" ? "lax" : "none",
+      sameSite: "none",
       secure: true,
     });
 
