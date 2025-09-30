@@ -40,7 +40,7 @@ export const login = async (req: Request, res: Response) => {
       secure: true,
     });
 
-    res.status(200).json({ message: "Login successful" });
+    res.status(200).json({ message: "Login successful", id: user.id });
   } catch (error) {
     if (error instanceof z.ZodError) {
       const formatted = error.issues.map((issue) => ({
