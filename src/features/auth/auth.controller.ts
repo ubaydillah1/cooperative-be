@@ -5,7 +5,6 @@ import bcrypt from "bcrypt";
 import { loginSchema, registerSchema } from "./auth.scheme.js";
 import { generateSessionToken } from "../../utils/token.js";
 import { addHours } from "date-fns";
-import { CONFIG } from "../../lib/config.js";
 import { AuthService } from "./auth.service.js";
 import supabase from "../../lib/supabase.js";
 
@@ -252,4 +251,25 @@ export const me = async (req: Request, res: Response) => {
   }
 
   res.status(200).json({ message: "User found", data: user });
+};
+
+export const logout = async (req: Request, res: Response) => {
+  const session = req.cookies?.token;
+
+  if (!session) {
+    res.status(404).json({ message: "Token not found" });
+    return;
+  }
+
+  const user = await authService.validateSession(session);
+
+  if (!user) {
+    res.status(404).json({ message: "User not found" });
+    return;
+  }
+  await prisma.session.delete({
+    where: { token: session },
+  });
+
+  res.clearCookie("token").status(200).json({ message: "Logout successful" });
 };

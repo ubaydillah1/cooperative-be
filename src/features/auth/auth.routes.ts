@@ -8,6 +8,7 @@ router.get("/me", AuthController.me);
 
 router.post("/login", AuthController.login);
 router.post("/register", AuthController.register);
+router.delete("/logout", AuthController.logout);
 
 router.put(
   "/edit-avatar/:id",
