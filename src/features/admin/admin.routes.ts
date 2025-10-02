@@ -15,11 +15,6 @@ router.patch(
 );
 
 // Organization
-router.get(
-  "/organization-structure",
-  AdminController.getAllStructureOrganization
-);
-
 router.post(
   "/organization-structure",
   upload.single("image"),

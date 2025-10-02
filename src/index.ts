@@ -4,6 +4,7 @@ import cors from "cors";
 import authRoutes from "./features/auth/auth.routes.js";
 import memberRoutes from "./features/member/member.routes.js";
 import adminRoutes from "./features/admin/admin.routes.js";
+import freeRoutes from "./features/free/free.routes.js";
 import "dotenv/config";
 import { authorize } from "./middleware/authorize.js";
 import prisma from "./lib/prisma.js";
@@ -27,6 +28,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use("/api/auth", authRoutes);
 app.use("/api/member", authorize(["MEMBER"]), memberRoutes);
 app.use("/api/admin", authorize(["ADMIN"]), adminRoutes);
+app.use("/api/free/organization-structures", freeRoutes);
 
 app.get("/users", async (_, res) => {
   const user = await prisma.user.findMany();
