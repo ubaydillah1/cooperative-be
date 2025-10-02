@@ -46,5 +46,4 @@ router.patch(
   validateRequest(["status"]),
   AdminController.updateStatusActivityProgram
 );
-
 export default router;

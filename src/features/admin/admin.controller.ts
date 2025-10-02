@@ -247,6 +247,7 @@ export const getMembers = async (req: Request, res: Response) => {
           address: true,
           ImageProfile: true,
           createdAt: true,
+          programType: true,
         },
       }),
       prisma.user.count({ where: { role: "MEMBER" } }),
