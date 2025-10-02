@@ -28,7 +28,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use("/api/auth", authRoutes);
 app.use("/api/member", authorize(["MEMBER"]), memberRoutes);
 app.use("/api/admin", authorize(["ADMIN"]), adminRoutes);
-app.use("/api/free/organization-structures", freeRoutes);
+app.use("/api/free", freeRoutes);
 
 app.get("/users", async (_, res) => {
   const user = await prisma.user.findMany();
