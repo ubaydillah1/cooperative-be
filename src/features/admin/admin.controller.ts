@@ -2,6 +2,8 @@ import type { Request, Response } from "express";
 import prisma from "../../lib/prisma.js";
 import { OrganizationPosition, Status } from "@prisma/client";
 import supabase from "../../lib/supabase.js";
+import { registerSchema } from "../auth/auth.scheme.js";
+import bcrypt from "bcrypt";
 
 export const getAllStructureOrganization = async (
   _: Request,
@@ -388,6 +390,71 @@ export const updateStatusActivityProgram = async (
     });
 
     res.status(200).json({ message: "Status updated" });
+  } catch {
+    res.status(500).json({ message: "Server Error" });
+  }
+};
+
+export const createMember = async (req: Request, res: Response) => {
+  try {
+    const { name, email, password, address, programType } =
+      registerSchema.parse(req.body);
+
+    const existingEmail = await prisma.user.findUnique({
+      where: { email },
+      select: { id: true },
+    });
+
+    if (existingEmail) {
+      res
+        .status(409)
+        .json({ message: "Email already in use", code: "EMAIL_IN_USE" });
+      return;
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const user = await prisma.user.create({
+      data: {
+        name,
+        email,
+        password: hashedPassword,
+        address: address ?? null,
+        programType,
+      },
+      select: { id: true },
+    });
+
+    res.status(200).json({ message: "Member created", data: user });
+  } catch {
+    res.status(500).json({ message: "Server Error" });
+  }
+};
+
+export const deleteMember = async (req: Request, res: Response) => {
+  try {
+    const { userId } = req.params;
+
+    if (!userId) {
+      res.status(400).json({ message: "User ID is required" });
+      return;
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true },
+    });
+
+    if (!user) {
+      res.status(404).json({ message: "User not found" });
+      return;
+    }
+
+    await prisma.user.delete({
+      where: { id: userId },
+    });
+
+    res.status(200).json({ message: "Member deleted" });
   } catch {
     res.status(500).json({ message: "Server Error" });
   }

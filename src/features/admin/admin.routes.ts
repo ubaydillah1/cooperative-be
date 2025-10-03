@@ -7,6 +7,8 @@ const router = Router();
 
 // Members
 router.get("/members", AdminController.getMembers);
+router.post("/member", AdminController.createMember);
+router.delete("/member/:userId", AdminController.deleteMember);
 
 router.patch(
   "/members/:userId",
