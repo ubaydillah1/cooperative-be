@@ -15,11 +15,9 @@ export const registerSchema = z.object({
   password: z.string().min(6),
   role: z.enum([Role.ADMIN, Role.MEMBER]).optional(),
   address: z.string().optional(),
-  programType: z
-    .enum([
-      ProgramType.MARKETING,
-      ProgramType.OPERASIONAL,
-      ProgramType.KEUANGAN,
-    ])
-    .optional(),
+  programType: z.enum([
+    ProgramType.MARKETING,
+    ProgramType.OPERASIONAL,
+    ProgramType.KEUANGAN,
+  ]),
 });
