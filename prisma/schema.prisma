@@ -36,7 +36,7 @@ model User {
 
 model Session {
   id        String   @id @default(uuid())
-  user      User     @relation(fields: [userId], references: [id])
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    String
   token     String   @unique
   expiresAt DateTime
@@ -62,9 +62,10 @@ model News {
   title       String
   subtitle    String?
   description String
+  programType ProgramType
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
-  User        User?       @relation(fields: [userId], references: [id])
+  User        User?       @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId      String?
   MediaNews   MediaNews[]
 
@@ -78,7 +79,7 @@ model MediaNews {
   format   String?
   size     Int?
   order    Int?
-  news     News    @relation(fields: [newsId], references: [id])
+  news     News    @relation(fields: [newsId], references: [id], onDelete: Cascade)
   newsId   String
 }
 
@@ -89,7 +90,7 @@ model ActivityProgram {
   time          DateTime
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
-  User          User?           @relation(fields: [userId], references: [id])
+  User          User?           @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId        String?
   status        Status          @default(PENDING)
   MediaActivity MediaActivity[]
@@ -104,7 +105,7 @@ model MediaActivity {
   format            String?
   size              Int?
   order             Int?
-  activityProgram   ActivityProgram @relation(fields: [activityProgramId], references: [id])
+  activityProgram   ActivityProgram @relation(fields: [activityProgramId], references: [id], onDelete: Cascade)
   activityProgramId String
 }
 
